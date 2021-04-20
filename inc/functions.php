@@ -2,6 +2,7 @@
 
 function wdt_add_preloader() {
 	?>
+	<noscript><style type="text/css">.preloader { display: none; }</style></noscript>
 	<div class="preloader">
 		<div class="spinner">
 			<div class="rect1"></div>
@@ -16,7 +17,7 @@ function wdt_add_preloader() {
 add_action('wdt_body', 'wdt_add_preloader');
 
 function wdt_print_breadcrumbs() {
-	global $w2dc_instance;
+	global $w2dc_instance, $w2rr_instance;
 	
 	if (
 		$w2dc_instance &&
@@ -30,6 +31,18 @@ function wdt_print_breadcrumbs() {
 		if ($directory_controller->breadcrumbs) {
 			echo '<div class="container">';
 			$directory_controller->printBreadCrumbs(' / ');
+			echo '</div>';
+		}
+	} elseif (
+		$w2rr_instance && 
+		(
+				(w2rr_isReview() && ($review_controller = w2rr_getFrontendControllers(W2RR_REVIEW_PAGE_SHORTCODE)))
+		)
+	) {
+		$review_controller = array_shift($review_controller);
+		if ($review_controller->breadcrumbs) {
+			echo '<div class="container">';
+			$review_controller->printBreadCrumbs(' / ');
 			echo '</div>';
 		}
 	} else {
@@ -147,17 +160,15 @@ function wdt_is_right_sidebar() {
 function wdt_get_page_title($title = '') {
 	global $w2dc_instance;
 	
-	if (
-		$w2dc_instance &&
-		(
-				($directory_controller = $w2dc_instance->getShortcodeProperty(W2DC_MAIN_SHORTCODE)) ||
-				($directory_controller = $w2dc_instance->getShortcodeProperty(W2DC_LISTING_SHORTCODE)) ||
-				($directory_controller = $w2dc_instance->getShortcodeProperty('webdirectory-listing')) ||
-				($directory_controller = apply_filters('w2dc_get_directory_controller', false))
-		)
-	) {
-		if ($directory_controller->page_title) {
-			$title = $directory_controller->page_title;
+	if ($w2dc_instance) {
+		if ($listing = w2dc_isListing()) {
+			$title = $listing->title();
+		}
+		if ($category = w2dc_isCategory()) {
+			$title = $category->name;
+		}
+		if ($location = w2dc_isLocation()) {
+			$title = $location->name;
 		}
 	}
 	
@@ -219,32 +230,16 @@ function wdt_get_page_featured_image() {
 	global $w2dc_instance;
 	
 	$image_url = '';
-
-	if (
-		$w2dc_instance &&
-		(
-				($directory_controller = $w2dc_instance->getShortcodeProperty(W2DC_MAIN_SHORTCODE)) ||
-				($directory_controller = $w2dc_instance->getShortcodeProperty(W2DC_LISTING_SHORTCODE)) ||
-				($directory_controller = $w2dc_instance->getShortcodeProperty('webdirectory-listing')) ||
-				($directory_controller = apply_filters('w2dc_get_directory_controller', false))
-		)
-	) {
-		if ($directory_controller->is_category) {
-			$categories_ids = array_reverse(w2dc_get_term_parents_ids($directory_controller->category->term_id, W2DC_CATEGORIES_TAX));
-			foreach ($categories_ids AS $id) {
-				if ($image_url = w2dc_getCategoryImageUrl($id, array(WDT_FEATURED_SIZE_WIDTH, WDT_FEATURED_SIZE_HEIGHT))) {
-					break;
-				}
-			}
-		} elseif ($directory_controller->is_location) {
-			$locations_ids = array_reverse(w2dc_get_term_parents_ids($directory_controller->location->term_id, W2DC_LOCATIONS_TAX));
-			foreach ($locations_ids AS $id) {
-				if ($image_url = w2dc_getLocationImageUrl($id, array(WDT_FEATURED_SIZE_WIDTH, WDT_FEATURED_SIZE_HEIGHT))) {
-					break;
-				}
-			}
-		} elseif ($directory_controller->is_single) {
-			$image_url = $directory_controller->object_single->get_logo_url(array(WDT_FEATURED_SIZE_WIDTH, WDT_FEATURED_SIZE_HEIGHT));
+	
+	if ($w2dc_instance) {
+		if ($listing = w2dc_isListing()) {
+			$image_url = $listing->get_logo_url(array(W2DC_FEATURED_SIZE_WIDTH, W2DC_FEATURED_SIZE_HEIGHT));
+		}
+		if ($category = w2dc_isCategory()) {
+			$image_url = w2dc_getCategoryImageUrl($category->term_id, array(W2DC_FEATURED_SIZE_WIDTH, W2DC_FEATURED_SIZE_HEIGHT));
+		}
+		if ($location = w2dc_isLocation()) {
+			$image_url = w2dc_getLocationImageUrl($location->term_id, array(W2DC_FEATURED_SIZE_WIDTH, W2DC_FEATURED_SIZE_HEIGHT));
 		}
 	}
 	
@@ -257,6 +252,16 @@ function wdt_get_page_featured_image() {
 	}
 	
 	return $image_url;
+}
+
+function wdt_get_theme_page_title() {
+	
+	/* $post = the_post();
+	var_dump(the_post());
+
+	if ($post->post_title) {
+		the_title( '<h1 class="entry-title">', '</h1>' );
+	} */
 }
 
 ?>

@@ -7,6 +7,8 @@
 		
 			<?php while ( have_posts() ) : the_post(); ?>
 			
+				<?php wdt_get_theme_page_title(); ?>
+			
 				<?php get_template_part('template-parts/content', 'page'); ?>
 				
 				<?php

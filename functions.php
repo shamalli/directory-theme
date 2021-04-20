@@ -100,9 +100,31 @@ function wdt_enqueue_dynamic_css() {
 add_action('wp_head', 'wdt_enqueue_dynamic_css', 9999);
 
 function wdt_scripts_styles() {
-	wp_enqueue_style('wdt-style', get_stylesheet_uri());
+	//wp_enqueue_style('wdt-style', get_stylesheet_uri());
 	
-	wp_enqueue_script('wdt-main', WDT_URL . '/resources/js/main.js', array('jquery'));
+	wp_enqueue_script('wdt-main', WDT_URL . '/resources/js/main.js', array('jquery'), false, true);
+	
+	/* wp_enqueue_style('wdt-font-awesome', WDT_URL . '/resources/font-awesome/css/fontawesome.css');
+	
+	if (!is_customize_preview()) {
+		// Include dynamically generated css file if this file exists
+		$upload_dir = wp_upload_dir();
+		$filename = trailingslashit(set_url_scheme($upload_dir['baseurl'])) . 'wdt-theme.css';
+		$filename_dir = trailingslashit($upload_dir['basedir']) . 'wdt-theme.css';
+		global $wp_filesystem;
+		if (empty($wp_filesystem)) {
+			require_once(ABSPATH .'/wp-admin/includes/file.php');
+			WP_Filesystem();
+		}
+		if ($wp_filesystem && trim($wp_filesystem->get_contents($filename_dir))) { // if css file creation success
+			wp_enqueue_style('wdt-theme-dynamic-css', $filename, array(), time());
+		}
+	} */
+}
+add_action('wp_enqueue_scripts', 'wdt_scripts_styles');
+
+function wdt_scripts_styles_in_footer() {
+	wp_enqueue_style('wdt-style', get_stylesheet_uri());
 	
 	wp_enqueue_style('wdt-font-awesome', WDT_URL . '/resources/font-awesome/css/fontawesome.css');
 	
@@ -121,7 +143,7 @@ function wdt_scripts_styles() {
 		}
 	}
 }
-add_action('wp_enqueue_scripts', 'wdt_scripts_styles');
+add_action('get_footer', 'wdt_scripts_styles_in_footer');
 
 function wdt_title_tag($title, $separator = ' - ') {
 	if (is_page()) {
