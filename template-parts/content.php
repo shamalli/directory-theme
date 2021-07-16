@@ -3,9 +3,11 @@
 		<h2 class="entry-title"><a href="<?php echo esc_url(get_permalink()); ?>"><?php the_title(); ?></a></h2>
 	</header>
 
+	<?php if (!is_singular()): ?>
 	<div class="entry-summary">
 		<?php the_excerpt(); ?>
 	</div>
+	<?php endif; ?>
 
 	<?php if (is_singular()): ?>
 	<div class="post-thumbnail">
@@ -17,6 +19,7 @@
 	</a>
 	<?php endif; ?>
 
+	<?php if (is_singular()): ?>
 	<div class="entry-content">
 		<?php
 			/* translators: %s: Name of current post */
@@ -49,4 +52,5 @@
 			);
 		?>
 	</footer>
+	<?php endif; ?>
 </article>
